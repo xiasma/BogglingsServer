@@ -1,0 +1,122 @@
+class Score:
+    def __init__(
+            self,
+            scoreId: str,
+            createdDate,
+            lastUsedDate,
+            losses: int = 0,
+            wins: int = 0,
+            numericalScore: int = 0,
+            status: str = "unknown"):
+        self.scoreId = scoreId
+        self.losses = losses
+        self.wins = wins
+        self.numericalScore = numericalScore
+        self.status = status
+        createdDate = createdDate
+        lastUsedDate = lastUsedDate
+    def to_dict(self):
+        return {
+            'scoreId': self.scoreId,
+            'createdDate': self.createdDate,
+            'lastUsedDate': self.lastUsedDate,
+            'losses': self.losses,
+            'wins': self.wins,
+            'numericalScore': self.numericalScore,
+            'status': self.status
+        }
+
+class Game:
+    def __init__(
+            self, 
+            gameId: str,
+            createdDate,
+            lastUsedDate,
+            playerId: str,
+            turnIndex: int,
+            score: Score):
+        self.gameId = gameId
+        self.createdDate = createdDate
+        self.lastUsedDate = lastUsedDate
+        self.playerId = playerId
+        self.turnIndex = turnIndex
+        self.score = score
+    def to_dict(self):
+        return {
+            'gameId': self.gameId,
+            'createdDate': self.createdDate,
+            'lastUsedDate': self.lastUsedDate,
+            'playerId': self.playerId,
+            'turnIndex': self.turnIndex,
+            'scoreId': self.score.scoreId,
+            'losses': self.score.losses,
+            'wins': self.score.wins,
+            'numericalScore': self.score.numericalScore,
+            'status': self.score.status
+        }
+
+class Player:
+    def __init__(
+            self, 
+            playerId: str,
+            createdDate,
+            lastUsedDate):
+        self.playerId = playerId
+        self.createdDate = createdDate
+        self.lastUsedDate = lastUsedDate
+    def to_dict(self):
+        return {
+            'playerId': self.playerId,
+            'createdDate': self.createdDate,
+            'lastUsedDate': self.lastUsedDate
+        }
+
+class Turn:
+    def __init__(
+            self, 
+            gameId: str,
+            createdDate,
+            lastUsedDate,
+            turnState: str,
+            turnIndex: int):
+        self.gameId = gameId
+        self.createdDate = createdDate
+        self.lastUsedDate = lastUsedDate
+        self.turnState = turnState
+        self.turnIndex = turnIndex
+    def to_dict(self):
+        return {
+            'gameId': self.gameId,
+            'createdDate': self.createdDate,
+            'lastUsedDate': self.lastUsedDate,
+            'turnState': self.turnState,
+            'turnIndex': self.turnIndex
+        }
+
+class PlayerTurn:
+    def __init__(
+            self, 
+            playerTurnId: str,
+            createdDate,
+            lastUsedDate,
+            turnId: str,
+            score: Score):
+        self.playerTurnId = playerTurnId
+        self.createdDate = createdDate
+        self.lastUsedDate = lastUsedDate
+        self.turnId = turnId
+        self.score = score
+    def to_dict(self):
+        return {
+            'playerTurnId': self.playerTurnId,
+            'createdDate': self.createdDate,
+            'lastUsedDate': self.lastUsedDate,
+            'turnId': self.turnId,
+            'score': {
+                'scoreId': self.score.scoreId,
+                'losses': self.score.losses,
+                'wins': self.score.wins,
+                'numericalScore': self.score.numericalScore,
+                'status': self.score.status
+            }
+        }
