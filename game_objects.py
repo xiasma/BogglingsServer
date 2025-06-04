@@ -1,25 +1,19 @@
+from datetime import datetime
+
+
 class Score:
     def __init__(
             self,
-            scoreId: str,
-            createdDate,
-            lastUsedDate,
             losses: int = 0,
             wins: int = 0,
             numericalScore: int = 0,
             status: str = "unknown"):
-        self.scoreId = scoreId
         self.losses = losses
         self.wins = wins
         self.numericalScore = numericalScore
-        self.status = status
-        createdDate = createdDate
-        lastUsedDate = lastUsedDate
+        self.status = status        
     def to_dict(self):
         return {
-            'scoreId': self.scoreId,
-            'createdDate': self.createdDate,
-            'lastUsedDate': self.lastUsedDate,
             'losses': self.losses,
             'wins': self.wins,
             'numericalScore': self.numericalScore,
@@ -48,7 +42,6 @@ class Game:
             'lastUsedDate': self.lastUsedDate,
             'playerId': self.playerId,
             'turnIndex': self.turnIndex,
-            'scoreId': self.score.scoreId,
             'losses': self.score.losses,
             'wins': self.score.wins,
             'numericalScore': self.score.numericalScore,
@@ -103,11 +96,13 @@ class PlayerTurn:
             createdDate,
             lastUsedDate,
             turnId: str,
+            turnIndex: int,
             score: Score):
         self.playerTurnId = playerTurnId
         self.createdDate = createdDate
         self.lastUsedDate = lastUsedDate
         self.turnId = turnId
+        self.turnIndex = turnIndex
         self.score = score
     def to_dict(self):
         return {
@@ -116,7 +111,6 @@ class PlayerTurn:
             'lastUsedDate': self.lastUsedDate,
             'turnId': self.turnId,
             'score': {
-                'scoreId': self.score.scoreId,
                 'losses': self.score.losses,
                 'wins': self.score.wins,
                 'numericalScore': self.score.numericalScore,

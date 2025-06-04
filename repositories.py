@@ -21,9 +21,6 @@ def get_game(gameId: str) -> Game:
     if 'Item' in response:
         item = response['Item']
         score = Score(
-            scoreId=item['scoreId'],
-            createdDate=item['createdDate'],
-            lastUsedDate=item['lastUsedDate'],
             losses=item['losses'],
             wins=item['wins'],
             numericalScore=item['numericalScore'],
@@ -48,7 +45,7 @@ def get_game(gameId: str) -> Game:
     else:
         return None
     
-def create_game(gameId: str, playerId: str, turnIndex: int, scoreId: str, losses: int, wins: int, numericalScore: int, status: str) -> Game:
+def create_game(gameId: str, playerId: str, turnIndex: int, losses: int, wins: int, numericalScore: int, status: str) -> Game:
     createdDate = lastUsedDate = datetime.now().isoformat()
     item = {
         'gameId': gameId,
@@ -56,7 +53,6 @@ def create_game(gameId: str, playerId: str, turnIndex: int, scoreId: str, losses
         'lastUsedDate': lastUsedDate,
         'playerId': playerId,
         'turnIndex': turnIndex,
-        'scoreId': scoreId,
         'losses': losses,
         'wins': wins,
         'numericalScore': numericalScore,
@@ -70,9 +66,6 @@ def create_game(gameId: str, playerId: str, turnIndex: int, scoreId: str, losses
         playerId=playerId,
         turnIndex=turnIndex,
         score=Score(
-            scoreId=scoreId,
-            createdDate=createdDate,
-            lastUsedDate=lastUsedDate,
             losses=losses,
             wins=wins,
             numericalScore=numericalScore,
@@ -247,13 +240,19 @@ def get_player_turn(playerTurnId: str) -> PlayerTurn:
     )
     if 'Item' in response:
         item = response['Item']
+        score = Score(
+            losses=item['losses'],
+            wins=item['wins'],
+            numericalScore=item['numericalScore'],
+            status=item['status']
+        )
         playerTurn = PlayerTurn(
             playerTurnId=item['playerTurnId'],
-            gameId=item['gameId'],
             createdDate=item['createdDate'],
             lastUsedDate=item['lastUsedDate'],
-            turnState=item['turnState'],
-            turnIndex=item['turnIndex']
+            turnId=item['turnId'],
+            turnIndex=item['turnIndex'],
+            score=score
         )
         last_used_date = datetime.utcnow().isoformat()
         playerTurn.lastUsedDate = last_used_date
@@ -266,18 +265,19 @@ def get_player_turn(playerTurnId: str) -> PlayerTurn:
     else:
         return None
     
-def create_player_turn(playerTurnId: str, turnId: str, score: Score) -> PlayerTurn:
+def create_player_turn(playerTurnId: str, turnId: str, turnIndex: int, score: Score) -> PlayerTurn:
     createdDate = lastUsedDate = datetime.now().isoformat()
     item = {
         'playerTurnId': playerTurnId,
         'turnId': turnId,
         'createdDate': createdDate,
         'lastUsedDate': lastUsedDate,
-        'scoreId': score.scoreId,
         'losses': score.losses,
         'wins': score.wins,
         'numericalScore': score.numericalScore,
-        'status': score.status
+        'status': score.status,
+        'turnIndex': turnIndex
+
     }
     tablePlayerTurns.put_item(Item=item)
     return PlayerTurn(

@@ -44,7 +44,7 @@ def get_player_turns():
     player_turn_id = request.args.get('playerTurnId')
     player_turn = get_player_turn(player_turn_id)
     if not player_turn:
-        player_turn = create_player_turn(player_turn_id)
+        return jsonify({'error': 'Resource not found'}), 404
     return jsonify(player_turn.to_dict())
 
 @app.route('/api/playerturns', methods=['POST'])
@@ -52,10 +52,15 @@ def create_new_player_turn():
     data = request.json
     player_turn_id = data.get('playerTurnId')
     turn_id = data.get('turnId')
-    score = data.get('score')
-    if not all([player_turn_id, turn_id, score]):
+    turn_index = data.get('turnIndex')
+    losses = data.get('losses')
+    wins = data.get('wins')
+    numerical_score = data.get('numericalScore')
+    status = data.get('status')
+    score = Score(losses=losses, wins=wins, numericalScore=numerical_score, status=status)
+    if not all([player_turn_id, turn_id, turn_index, score]):
         return jsonify({'error': 'Missing required fields'}), 400
-    player_turn = create_player_turn(player_turn_id, turn_id, score)
+    player_turn = create_player_turn(player_turn_id, turn_id, turn_index, score)
     return jsonify(player_turn.to_dict()), 201
 
 @app.route('/api/games', methods=['GET'])
@@ -72,12 +77,11 @@ def create_new_game():
     game_id = data.get('gameId')
     player_id = data.get('playerId')
     turn_index = data.get('turnIndex')
-    score_id = data.get('scoreId')
     losses = data.get('losses')
     wins = data.get('wins')
     numerical_score = data.get('numericalScore')
     status = data.get('status')
-    game = create_game(game_id, player_id, turn_index, score_id, losses, wins, numerical_score, status)
+    game = create_game(game_id, player_id, turn_index, losses, wins, numerical_score, status)
     return jsonify(game.to_dict()), 201
     
 
