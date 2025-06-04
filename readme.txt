@@ -3,18 +3,15 @@ In the AWS account, you need to create DynamoDB tables:
 
 BogglingsGames
     partition key: gameId
-    sort key: turnIndex
 
 BogglingsPlayers
     partition key: playerId
 
 BogglingsPlayerTurns
     partition key: playerTurnId
-    sort key: turnId
 
 BogglingsTurns
     partition key: turnId
-    sort key: turnIndex
 
 In AWS IAM
 create a user called BogglingsUser

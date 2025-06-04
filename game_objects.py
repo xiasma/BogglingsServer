@@ -74,11 +74,13 @@ class Player:
 class Turn:
     def __init__(
             self, 
+            turnId: str,
             gameId: str,
             createdDate,
             lastUsedDate,
             turnState: str,
             turnIndex: int):
+        self.turnId = turnId
         self.gameId = gameId
         self.createdDate = createdDate
         self.lastUsedDate = lastUsedDate
@@ -86,6 +88,7 @@ class Turn:
         self.turnIndex = turnIndex
     def to_dict(self):
         return {
+            'turnId': self.turnId,
             'gameId': self.gameId,
             'createdDate': self.createdDate,
             'lastUsedDate': self.lastUsedDate,

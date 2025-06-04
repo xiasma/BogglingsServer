@@ -10,7 +10,7 @@ tablePlayerTurns = dynamodb.Table('BogglingsPlayerTurns')
 tableTurns = dynamodb.Table('BogglingsTurns')
 
 def get_game(gameId: str) -> Game:
-    response = tablePlayers.get_item(
+    response = tableGames.get_item(
         Key={
             'gameId': gameId
         }
@@ -59,7 +59,7 @@ def create_game(gameId: str, playerId: str, turnIndex: int, scoreId: str, losses
         'numericalScore': numericalScore,
         'status': status
     }
-    tablePlayers.put_item(Item=item)
+    tableGames.put_item(Item=item)
     return Game(
         gameId=gameId,
         createdDate=createdDate,
@@ -78,11 +78,41 @@ def create_game(gameId: str, playerId: str, turnIndex: int, scoreId: str, losses
     )
 
 def get_turn(turnId: str) -> Turn:
-    response = tablePlayerTurns.get_item(
+    response = tableTurns.get_item(
         Key={
             'turnId': turnId
         }
     )
+    if 'Item' in response:
+        item = response['Item']
+        turn = Turn(
+            turnId=item['turnId'],
+            gameId=item['gameId'],
+            createdDate=item['createdDate'],
+            lastUsedDate=item['lastUsedDate'],
+            turnState=item['turnState'],
+            turnIndex=item['turnIndex']
+        )
+        last_used_date = datetime.utcnow().isoformat()
+        turn.lastUsedDate = last_used_date
+        tableTurns.update_item(
+            Key={'turnId': turnId},
+            UpdateExpression='SET lastUsedDate = :lastUsedDate',
+            ExpressionAttributeValues={':lastUsedDate': last_used_date}
+        )
+        return turn
+    else:
+        return None
+
+def get_random_turn(turnId: str) -> Turn:
+    params = {
+        'TableName': tableTurns.name,
+        'Limit': 1,
+        'ScanIndexForward': False
+    }
+
+    response = tableTurns.scan(**params)
+
     if 'Item' in response:
         item = response['Item']
         turn = Turn(
@@ -114,7 +144,7 @@ def create_turn(turnId: str, gameId: str, turnState: str, turnIndex: int) -> Tur
         'turnState': turnState,
         'turnIndex': turnIndex
     }
-    tablePlayerTurns.put_item(Item=item)
+    tableTurns.put_item(Item=item)
     return Turn(
         turnId=turnId,
         gameId=gameId,
