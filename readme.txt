@@ -1,4 +1,34 @@
 *******Do once:
+In the AWS account, you need to create DynamoDB tables:
+
+BogglingsGames
+    partition key: gameId
+    sort key: turnIndex
+
+BogglingsPlayers
+    partition key: playerId
+
+BogglingsPlayerTurns
+    partition key: playerTurnId
+    sort key: turnId
+
+BogglingsTurns
+    partition key: turnId
+    sort key: turnIndex
+
+In AWS IAM
+create a user called BogglingsUser
+
+Add permissions polices
+    AmazonDynamoDBFullAccess
+    AmazonDynamoDBFullAccess_v2
+    AmazonDynamoDBFullAccesswithDataPipeline
+    AmazonDynamoDBReadOnlyAccess
+
+
+
+On your computer:
+
 Install python - I'm using 3.13.3 so ideally use the same version.
 Install VSCode
 In VSCode, from the Terminal menu, New Terminal
