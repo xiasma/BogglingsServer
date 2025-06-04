@@ -12,7 +12,8 @@ BogglingsPlayerTurns
 
 BogglingsTurns
     partition key: turnId
-
+    Create a global secondary index called turnIndex-index against partitionkey turnIndex (number)
+    
 In AWS IAM
 create a user called BogglingsUser
 

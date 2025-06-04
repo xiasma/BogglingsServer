@@ -1,5 +1,8 @@
+import random
 from datetime import datetime
 import boto3
+from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 from game_objects import *
 
 dynamodb = boto3.resource('dynamodb')
@@ -104,34 +107,78 @@ def get_turn(turnId: str) -> Turn:
     else:
         return None
 
-def get_random_turn(turnId: str) -> Turn:
-    params = {
-        'TableName': tableTurns.name,
-        'Limit': 1,
-        'ScanIndexForward': False
-    }
+def get_random_turn(turn_index: int):
+    try:
+        # Initialize DynamoDB resource
+        dynamodb = boto3.resource('dynamodb')
+        
+        # Verify table exists
+        tableTurns.load()
+        
+        # Verify GSI exists by checking table's index configuration
+        table_info = dynamodb.meta.client.describe_table(TableName=tableTurns.name)
+        indexes = table_info['Table'].get('GlobalSecondaryIndexes', [])
+        gsi_name = 'turnIndex-index'  # Replace with your GSI name
+        if not any(index['IndexName'] == gsi_name for index in indexes):
+            print(f"GSI '{gsi_name}' not found on table 'Turns'")
+            return None
 
-    response = tableTurns.scan(**params)
+        # Query using the GSI
+        response = tableTurns.query(
+            IndexName=gsi_name,
+            KeyConditionExpression=Key('turnIndex').eq(turn_index),
+            ProjectionExpression='turnId, turnIndex, gameId, createdDate, lastUsedDate, turnState',  
+        )
+        
+        items = response.get('Items', [])
+        
+        # Handle pagination
+        while 'LastEvaluatedKey' in response:
+            response = tableTurns.query(
+                IndexName=gsi_name,
+                KeyConditionExpression=Key('turnIndex').eq(turn_index),
+                ProjectionExpression='turnId, turnIndex',
+                ExclusiveStartKey=response['LastEvaluatedKey']
+            )
+            items.extend(response.get('Items', []))
+        
+        if not items:
+            print(f"No records found for turnIndex={turn_index}")
+            return None
+                            
 
-    if 'Item' in response:
-        item = response['Item']
-        turn = Turn(
-            turnId=item['turnId'],
-            gameId=item['gameId'],
-            createdDate=item['createdDate'],
-            lastUsedDate=item['lastUsedDate'],
-            turnState=item['turnState'],
-            turnIndex=item['turnIndex']
-        )
-        last_used_date = datetime.utcnow().isoformat()
-        turn.lastUsedDate = last_used_date
-        tablePlayers.update_item(
-            Key={'turnId': turnId},
-            UpdateExpression='SET lastUsedDate = :lastUsedDate',
-            ExpressionAttributeValues={':lastUsedDate': last_used_date}
-        )
-        return turn
-    else:
+        item = random.choice(items)  
+
+        if item:
+            turn = Turn(
+                turnId=item['turnId'],
+                gameId=item['gameId'],
+                createdDate=item['createdDate'],
+                lastUsedDate=item['lastUsedDate'],
+                turnState=item['turnState'],
+                turnIndex=item['turnIndex']
+            )
+            last_used_date = datetime.utcnow().isoformat()
+            turn.lastUsedDate = last_used_date
+            tableTurns.update_item(
+                Key={'turnId': turn.turnId},
+                UpdateExpression='SET lastUsedDate = :lastUsedDate',
+                ExpressionAttributeValues={':lastUsedDate': last_used_date}
+            )
+            return turn
+
+        return None
+       
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        error_msg = e.response['Error']['Message']
+        if error_code == 'ResourceNotFoundException':
+            print(f"Resource not found: {error_msg}. Check table 'Turns' and GSI '{gsi_name}' in your AWS region.")
+        else:
+            print(f"DynamoDB error: {error_code} - {error_msg}")
+        return None
+    except Exception as e:
+        print(f"Error querying DynamoDB: {str(e)}")
         return None
 
 def create_turn(turnId: str, gameId: str, turnState: str, turnIndex: int) -> Turn:

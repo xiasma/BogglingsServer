@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from game_objects import *
 from repositories import *
+import repositories
 
 app = Flask(__name__)
 
@@ -18,23 +19,10 @@ def get_turns():
     turn = get_turn(turn_id)
     return jsonify(turn.to_dict())
 
-# @app.route('/api/turns', methods=['POST'])
-# def create_new_turn():
-#     data = request.json
-#     turn_id = data.get('turnId')
-#     game_id = data.get('gameId')
-#     turn_state = data.get('turnState')
-#     turn_index = data.get('turnIndex')
-    
-#     if not all([turn_id, game_id, turn_state, turn_index is not None]):
-#         return jsonify({'error': 'Missing required fields'}), 400
-    
-#     turn = create_turn(turn_id, game_id, turn_state, turn_index)
-#     return jsonify(turn.to_dict()), 201
-
 @app.route('/api/turns/random', methods=['GET'])
 def get_random_turn():
-    turn = get_random_turn()
+    turn_index = int(request.args.get('turnIndex'))
+    turn = repositories.get_random_turn(turn_index)
     return jsonify(turn.to_dict()) 
  
 @app.route('/api/turns', methods=['POST'])
